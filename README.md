@@ -4,6 +4,8 @@
 
 **DataSet Chosen**
 
-ENRON EMAIL SPAM DETECTION
+SENTIMENT140
 
-Each records consists of 3 features- the subject, the email content and the label. Each email is of 2 classes- spam or ham. There are 30k examples in train and 3k in test.
+Each record has two features, the sentiment and text.
+The sentiment is either 0 for negative or 4 for positive.
+The training dataset has 1520k records while the test dataset has 80k records.
