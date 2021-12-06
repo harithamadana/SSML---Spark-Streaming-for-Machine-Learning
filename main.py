@@ -7,9 +7,9 @@ def prepro(df):
         clean=list(df["feature1"][i].split(" "))
         print(clean)
         for j in clean:
-            if(j.startswith("@")):
-                clean.remove(j)
-                continue
+#             if(j.startswith("@")):
+#                 clean.remove(j)
+#                 continue
             if(j.endswith("?")):
                 j.replace("?","")
             
@@ -18,12 +18,18 @@ def prepro(df):
             
             if(j.endswith(".")):
                 j.replace(".","")
+                
+            if(j.startswith("@")):
+                clean.remove(j)
+                continue
+                
             if(j==" "):
                 clean.remove(j)
                 continue
             
             if(j.startswith("#")):
                 clean.remove(j)
+                continue
             
             if(j.startswith("http://")):
                 clean.remove(j)
