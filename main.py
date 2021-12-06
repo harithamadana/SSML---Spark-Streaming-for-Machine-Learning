@@ -4,7 +4,7 @@ import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.ml.feature import StopWordsRemover
 
-def prepro(df):
+def prepro(df):             # used for splitting string to individual words in a list and remove username,urls and numbers
     for i in range(0,len(df['feature1'])):
         clean=list(df["feature1"][i].split(" "))
         #print(clean)
@@ -38,11 +38,11 @@ try:
         prepro(df)
         
         spark = SparkSession.builder.appName("pandas to spark").getOrCreate()
-        df_spark = spark.createDataFrame(df)
+        df_spark = spark.createDataFrame(df)       #Convert pandas data frame to spark df
         
 
         without_stop = StopWordsRemover(inputCol="feature1", outputCol="filtered")
-        without_stop.transform(df_spark).show(truncate=False)
+        without_stop.transform(df_spark).show(truncate=False)       #Results in the removal of stop words 
         print('.......................................................................................................')
         
 except Exception as e:
