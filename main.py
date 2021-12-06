@@ -1,36 +1,20 @@
 import socket
 import json
 import pandas as pd
+from pyspark.sql import SparkSession
+from pyspark.ml.feature import StopWordsRemover
 
 def prepro(df):
     for i in range(0,len(df['feature1'])):
         clean=list(df["feature1"][i].split(" "))
-        print(clean)
+        #print(clean)
         for j in clean:
-#             if(j.startswith("@")):
-#                 clean.remove(j)
-#                 continue
-            if(j.endswith("?")):
-                j.replace("?","")
-            
-            if(j.endswith("!")):
-                j.replace("!","")
-            
-            if(j.endswith(".")):
-                j.replace(".","")
-                
             if(j.startswith("@")):
                 clean.remove(j)
                 continue
-                
-            if(j==" "):
-                clean.remove(j)
-                continue
-            
             if(j.startswith("#")):
                 clean.remove(j)
                 continue
-            
             if(j.startswith("http://")):
                 clean.remove(j)
                 continue
@@ -38,8 +22,9 @@ def prepro(df):
             if(any(map(str.isdigit, j))):
                 clean.remove(j)
                 continue
-        print(clean)
-        
+        df['feature1'][i] = clean
+        #print(clean)
+    
 TCP_IP = "localhost"
 TCP_PORT = 6100
 soc=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -51,6 +36,13 @@ try:
         a_json=json.loads(json_recv)
         df=pd.DataFrame.from_dict(a_json,orient="index")
         prepro(df)
+        
+        spark = SparkSession.builder.appName("pandas to spark").getOrCreate()
+        df_spark = spark.createDataFrame(df)
+        
+
+        without_stop = StopWordsRemover(inputCol="feature1", outputCol="filtered")
+        without_stop.transform(df_spark).show(truncate=False)
         print('.......................................................................................................')
         
 except Exception as e:
