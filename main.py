@@ -23,10 +23,6 @@ try:
 except Exception as e:
     print(e)
 
-
-# In[1]:
-
-
 def prepro(df):
     for i in range(0,len(df['feature1'])):
         clean=list(df["feature1"][i].split(" "))
@@ -49,13 +45,6 @@ def prepro(df):
         print(clean)
 
 
-# In[3]:
-
-
-df
-
-
-# In[4]:
 
 
 from pyspark.sql import SparkSession
@@ -63,19 +52,8 @@ spark = SparkSession.builder.appName(
   "pandas to spark").getOrCreate()
 
 
-# In[5]:
-
-
 df_spark = spark.createDataFrame(df)
 
-
-# In[6]:
-
-
-df_spark.show()
-
-
-# In[71]:
 
 
 from pyspark.ml.feature import StopWordsRemover
@@ -84,25 +62,16 @@ without_stop = StopWordsRemover(inputCol="feature1", outputCol="filtered")
 without_stop.transform(df_spark).show()
 
 
-# In[87]:
-
-
 from pyspark.ml.feature import CountVectorizer
 # fit a CountVectorizerModel from the corpus.
 cv = CountVectorizer(inputCol="filtered", outputCol="final", vocabSize=1000, minDF=2.0)
 model = cv.fit(without_stop.transform(df_spark))
 
 result = model.transform(without_stop.transform(df_spark))
-# result.show(truncate=False)
 
-
-# In[88]:
 
 
 result.show()
-
-
-# In[ ]:
 
 
 
