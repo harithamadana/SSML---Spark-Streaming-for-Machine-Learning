@@ -8,6 +8,9 @@ from pyspark.ml.feature import StopWordsRemover
 from sklearn.feature_extraction.text import HashingVectorizer
 from pyspark.sql import SparkSession
 from sklearn.naive_bayes import MultinomialNB
+from sklearn import linear_model
+from sklearn.datasets import load_digits
+from sklearn.linear_model import Perceptron
 
 
 def prepro(df):
@@ -57,11 +60,32 @@ try:
         
         x_train,x_test,y_train,y_test=train_test_split(hv_22,df['feature0'],test_size=0.3)
         
+        
+        # MULTINOMIAL NAIVE BAYEES
         mnd = MultinomialNB()
         mnd.partial_fit(x_train,y_train,classes=np.unique(y_train))
         
-        print("accuracy=",mnd.score(x_test,y_test))
-        print('.......................................................................................................')
+        print("Accuracy NB=",mnd.score(x_test,y_test))
+        
+        print(".........................................................................................")
+        #SGD classifier
+        clf=linear_model.SGDClassifier()
+        clf.fit(x_train,y_train)
+        print("Accuracy SGD=", clf.predict(x_test))
+        print(".........................................................................................")
+        
+        #PERCEPTRON
+        cl=Perceptron(tol=1e-3,random_state=0)
+        cl.fit(x_train,y_train)
+        print("Accuracy perceptron=",cl.score(x_test,y_test))
+        print(".........................................................................................")
+        
+        
+        
+        print('********************************************************************************************************')
+        
+        
+        
 
 except Exception as e:
     print(e)
