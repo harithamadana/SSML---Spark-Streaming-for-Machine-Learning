@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import numpy as np
 from pyspark.sql.functions import concat_ws
+from sklearn.metrics import accuracy_score
 from pyspark.ml.feature import StopWordsRemover
 from sklearn.feature_extraction.text import HashingVectorizer
 from pyspark.sql import SparkSession
@@ -12,7 +13,6 @@ from sklearn import linear_model
 from sklearn.datasets import load_digits
 from sklearn.linear_model import Perceptron
 import warnings
-
 warnings.filterwarnings("ignore")
 
 
@@ -67,13 +67,12 @@ try:
         # MULTINOMIAL NAIVE BAYEES
         mnd = MultinomialNB()
         mnd.partial_fit(x_train,y_train,classes=np.unique(y_train))
-        
         print("accuracy NB=",mnd.score(x_test,y_test))
         
         #SGD classifier
         clf=linear_model.SGDClassifier()
         clf.fit(x_train,y_train)
-        print("accuracy SGD=", clf.predict(x_test))
+        print("accuracy SGD=", clf.score(x_test,y_test))
         
         
         #PERCEPTRON
