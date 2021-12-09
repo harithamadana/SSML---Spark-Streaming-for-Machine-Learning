@@ -11,6 +11,9 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn import linear_model
 from sklearn.datasets import load_digits
 from sklearn.linear_model import Perceptron
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 def prepro(df):
@@ -65,24 +68,23 @@ try:
         mnd = MultinomialNB()
         mnd.partial_fit(x_train,y_train,classes=np.unique(y_train))
         
-        print("Accuracy NB=",mnd.score(x_test,y_test))
+        print("accuracy NB=",mnd.score(x_test,y_test))
         
-        print(".........................................................................................")
         #SGD classifier
         clf=linear_model.SGDClassifier()
         clf.fit(x_train,y_train)
-        print("Accuracy SGD=", clf.predict(x_test))
-        print(".........................................................................................")
+        print("accuracy SGD=", clf.predict(x_test))
+        
         
         #PERCEPTRON
         cl=Perceptron(tol=1e-3,random_state=0)
         cl.fit(x_train,y_train)
         print("Accuracy perceptron=",cl.score(x_test,y_test))
-        print(".........................................................................................")
         
         
         
-        print('********************************************************************************************************')
+        
+        print('.......................................................................................................')
         
         
         
