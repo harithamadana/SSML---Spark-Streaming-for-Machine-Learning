@@ -1,32 +1,19 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
-
-
 import socket
 import json
 import pandas as pd
-TCP_IP = "localhost"
-TCP_PORT = 6100
-soc=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+from sklearn.model_selection import train_test_split
+import numpy as np
+from pyspark.sql.functions import concat_ws
+from pyspark.ml.feature import StopWordsRemover
+from sklearn.feature_extraction.text import HashingVectorizer
+from pyspark.sql import SparkSession
+from sklearn.naive_bayes import MultinomialNB
 
-try:
-    soc.connect((TCP_IP, TCP_PORT))
-    while True:
-        json_recv=soc.recv(2048).decode()
-        a_json=json.loads(json_recv)
-        df=pd.DataFrame.from_dict(a_json,orient="index")
-        prepro(df)
-        break
-        print('.......................................................................................................')
-except Exception as e:
-    print(e)
 
 def prepro(df):
     for i in range(0,len(df['feature1'])):
         clean=list(df["feature1"][i].split(" "))
-        print(clean)
+        #print(clean)
         for j in clean:
             if(j.startswith("@")):
                 clean.remove(j)
@@ -42,37 +29,39 @@ def prepro(df):
                 clean.remove(j)
                 continue
         df['feature1'][i] = clean
-        print(clean)
+        
 
 
+TCP_IP = "localhost"
+TCP_PORT = 6100
+soc=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+try:
+    soc.connect((TCP_IP, TCP_PORT))
+    while True:
+        json_recv=soc.recv(2048).decode()
+        a_json=json.loads(json_recv)
+        df=pd.DataFrame.from_dict(a_json,orient="index")
+        prepro(df)
+        spark = SparkSession.builder.appName("pandas to spark").getOrCreate()
+        df_spark = spark.createDataFrame(df)
+        
+        without_stop = StopWordsRemover(inputCol="feature1", outputCol="filtered")
+        df_without = without_stop.transform(df_spark)
+        
+        h2=np.array(df_without.withColumn("filtered",concat_ws(" ","filtered")).collect(),dtype="object").tolist()
+        h22=[k[2] for k in h2 ]
+        
+        hv_2=HashingVectorizer(alternate_sign=False)
+        hv_22=hv_2.fit_transform(h22).toarray()
+        
+        x_train,x_test,y_train,y_test=train_test_split(hv_22,df['feature0'],test_size=0.3)
+        
+        mnd = MultinomialNB()
+        mnd.partial_fit(x_train,y_train,classes=np.unique(y_train))
+        
+        print("accuracy=",mnd.score(x_test,y_test))
+        print('.......................................................................................................')
 
-from pyspark.sql import SparkSession
-spark = SparkSession.builder.appName(
-  "pandas to spark").getOrCreate()
-
-
-df_spark = spark.createDataFrame(df)
-
-
-
-from pyspark.ml.feature import StopWordsRemover
-
-without_stop = StopWordsRemover(inputCol="feature1", outputCol="filtered")
-without_stop.transform(df_spark).show()
-
-
-from pyspark.ml.feature import CountVectorizer
-# fit a CountVectorizerModel from the corpus.
-cv = CountVectorizer(inputCol="filtered", outputCol="final", vocabSize=1000, minDF=2.0)
-model = cv.fit(without_stop.transform(df_spark))
-
-result = model.transform(without_stop.transform(df_spark))
-
-
-
-result.show()
-
-
-
-
+except Exception as e:
+    print(e)
